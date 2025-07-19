@@ -1,0 +1,23 @@
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# Temp files
+*~
+*.swp
+*.bak
+
+# Output dirs
+build/
+out/
+
+# Editor files
+.vscode/
+.idea/
+*.code-workspace
+
+
