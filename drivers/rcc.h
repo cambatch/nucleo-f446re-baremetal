@@ -1,0 +1,26 @@
+#ifndef DRIVER_RCC_H
+#define DRIVER_RCC_H
+
+#include "f446re.h"
+
+// GPIO peripheral clock enable
+#define GPIOA_PCLK_EN() (RCC->ahb1enr |= (1U << 0))
+#define GPIOB_PCLK_EN() (RCC->ahb1enr |= (1U << 1))
+#define GPIOC_PCLK_EN() (RCC->ahb1enr |= (1U << 2))
+#define GPIOD_PCLK_EN() (RCC->ahb1enr |= (1U << 3))
+#define GPIOE_PCLK_EN() (RCC->ahb1enr |= (1U << 4))
+#define GPIOF_PCLK_EN() (RCC->ahb1enr |= (1U << 5))
+#define GPIOG_PCLK_EN() (RCC->ahb1enr |= (1U << 6))
+#define GPIOH_PCLK_EN() (RCC->ahb1enr |= (1U << 7))
+
+// GPIO peripheral clock disable
+#define GPIOA_PCLK_DI() (RCC->ahb1enr &= ~(1U << 0))
+#define GPIOB_PCLK_DI() (RCC->ahb1enr &= ~(1U << 1))
+#define GPIOC_PCLK_DI() (RCC->ahb1enr &= ~(1U << 2))
+#define GPIOD_PCLK_DI() (RCC->ahb1enr &= ~(1U << 3))
+#define GPIOE_PCLK_DI() (RCC->ahb1enr &= ~(1U << 4))
+#define GPIOF_PCLK_DI() (RCC->ahb1enr &= ~(1U << 5))
+#define GPIOG_PCLK_DI() (RCC->ahb1enr &= ~(1U << 6))
+#define GPIOH_PCLK_DI() (RCC->ahb1enr &= ~(1U << 7))
+
+#endif

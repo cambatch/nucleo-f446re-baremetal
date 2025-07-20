@@ -1,3 +1,4 @@
+#include "f446re.h"
 
 void spin(volatile long count)
 {
@@ -6,29 +7,21 @@ void spin(volatile long count)
 
 int main(void)
 {
-    const long gpioa = 0x40020000;
-    const long rcc = 0x40023800;
+    gpio_handle_t handle;
+    handle.gpiox = GPIOA;
+    handle.config.pin_num = 5;
+    handle.config.mode = GPIO_MODE_OUTPUT;
+    handle.config.otype = GPIO_OTYPE_PP;
+    handle.config.speed = GPIO_SPEED_FAST;
+    handle.config.pupd = GPIO_PUPD_DI;
 
-    const long rcc_ahb1enr = rcc + 0x30;
-    const long gpioa_moder = gpioa + 0x00;
-    const long gpioa_odr = gpioa + 0x14;
-
-    // Enable gpioa
-    volatile long *reg = (long*)rcc_ahb1enr;
-    *reg |= (1 << 0);
-
-    // set gpioa PA5 mode to output
-    reg = (long*)gpioa_moder;
-    *reg &= ~(3 << (2 * 5));
-    *reg |= (1 << (2 * 5));
-
-    reg = (long*)gpioa_odr;
+    gpio_init(&handle);
 
     while(1)
     {
-        *reg |= (1 << 5);
+        gpio_write_pin(handle.gpiox, handle.config.pin_num, RESET);
         spin(999999);
-        *reg &= ~(1 << 5);
+        gpio_write_pin(handle.gpiox, handle.config.pin_num, SET);
         spin(999999);
     }
 }
