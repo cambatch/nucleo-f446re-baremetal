@@ -54,6 +54,7 @@ void EXTI3_Handler(void) WEAK_ALIAS_DEFAULT;
 void EXTI4_Handler(void) WEAK_ALIAS_DEFAULT;
 void DMA1_Stream0_Handler(void) WEAK_ALIAS_DEFAULT;
 void DMA1_Stream1_Handler(void) WEAK_ALIAS_DEFAULT;
+void DMA1_Stream2_Handler(void) WEAK_ALIAS_DEFAULT;
 void DMA1_Stream3_Handler(void) WEAK_ALIAS_DEFAULT;
 void DMA1_Stream4_Handler(void) WEAK_ALIAS_DEFAULT;
 void DMA1_Stream5_Handler(void) WEAK_ALIAS_DEFAULT;
@@ -130,7 +131,7 @@ void FMPI2C1_ER_Handler(void) WEAK_ALIAS_DEFAULT;
 
 // Vector table
 __attribute__((section(".vector_table")))
-void(*const vectors[112])(void) = {
+void(*const vectors[113])(void) = {
     (void (*)(void))(&_estack),
     Reset_Handler,
     NMI_Handler,
@@ -160,6 +161,7 @@ void(*const vectors[112])(void) = {
     EXTI4_Handler,
     DMA1_Stream0_Handler,
     DMA1_Stream1_Handler,
+    DMA1_Stream2_Handler,
     DMA1_Stream3_Handler,
     DMA1_Stream4_Handler,
     DMA1_Stream5_Handler,
