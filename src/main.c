@@ -5,23 +5,45 @@ void spin(volatile long count)
     while(count--) (void)0;
 }
 
+void init_button(void)
+{
+    // PC13 user button, pressed => LOW
+    gpio_handle_t button;
+    button.gpiox = GPIOC;
+    button.config.pin_num = GPIO_PIN_NUM_13;
+    button.config.mode = GPIO_MODE_IT_FT;
+    button.config.otype = GPIO_OTYPE_PP;
+    button.config.speed = GPIO_SPEED_FAST;
+    button.config.pupd = GPIO_PUPD_PU;
+
+    gpio_init(&button);
+}
+
+void init_led(void)
+{
+    gpio_handle_t led;
+    led.gpiox = GPIOA;
+    led.config.pin_num = GPIO_PIN_NUM_5;
+    led.config.mode = GPIO_MODE_OUTPUT;
+    led.config.otype = GPIO_OTYPE_PP;
+    led.config.speed = GPIO_SPEED_FAST;
+    led.config.pupd = GPIO_PUPD_DI;
+
+    gpio_init(&led);
+}
+
 int main(void)
 {
-    gpio_handle_t handle;
-    handle.gpiox = GPIOA;
-    handle.config.pin_num = 5;
-    handle.config.mode = GPIO_MODE_OUTPUT;
-    handle.config.otype = GPIO_OTYPE_PP;
-    handle.config.speed = GPIO_SPEED_FAST;
-    handle.config.pupd = GPIO_PUPD_DI;
+    init_button();
+    init_led();
 
-    gpio_init(&handle);
+    gpio_irq_config(IRQ_NUM_EXTI15_10, ENABLE);
 
-    while(1)
-    {
-        gpio_write_pin(handle.gpiox, handle.config.pin_num, RESET);
-        spin(999999);
-        gpio_write_pin(handle.gpiox, handle.config.pin_num, SET);
-        spin(999999);
-    }
+    while(1) (void)0;
+}
+
+void EXTI15_10_Handler(void)
+{
+    gpio_irq_handler(GPIO_PIN_NUM_13);
+    gpio_toggle_pin(GPIOA, GPIO_PIN_NUM_5);
 }

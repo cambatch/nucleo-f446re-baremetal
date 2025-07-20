@@ -3,6 +3,12 @@
 
 #include "f446re.h"
 
+// SYSCFG peripheral clock enable
+#define SYSCFG_PCLK_EN() (RCC->apb2enr |= (1 << 14))
+
+// SYSCFG peripheral clock disable
+#define SYSCFG_PCLK_DI() (RCC->apb2enr &= ~(1 << 14))
+
 // GPIO peripheral clock enable
 #define GPIOA_PCLK_EN() (RCC->ahb1enr |= (1U << 0))
 #define GPIOB_PCLK_EN() (RCC->ahb1enr |= (1U << 1))

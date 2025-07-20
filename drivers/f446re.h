@@ -8,6 +8,27 @@
 #define RESET DISABLE
 #define SET ENABLE
 
+
+// ==================== Processor Specific ====================
+// NVIC interrupt set-enable registers
+#define NVIC_ISER_BASE ((volatile uint32_t *)0xE000E100U)
+#define NVIC_ISER0 ((volatile uint32_t *)0xE000E100U)
+#define NVIC_ISER1 ((volatile uint32_t *)0xE000E104U)
+#define NVIC_ISER2 ((volatile uint32_t *)0xE000E108U)
+#define NVIC_ISER3 ((volatile uint32_t *)0xE000E10CU)
+
+// NVIC interrupt clear-enable registers
+#define NVIC_ICER_BASE ((volatile uint32_t *)0xE000E180U)
+#define NVIC_ICER0 ((volatile uint32_t *)0xE000E180U)
+#define NVIC_ICER1 ((volatile uint32_t *)0xE000E184U)
+#define NVIC_ICER2 ((volatile uint32_t *)0xE000E188U)
+#define NVIC_ICER3 ((volatile uint32_t *)0xE000E18CU)
+
+// NVIC interrupt priority register base address
+#define NVIC_IPRO_BASEADDR ((volatile uint32_t *)0xE000E400U)
+
+
+// ==================== F446xx Specific ====================
 // Bus base addresses
 #define APB1_BASEADDR 0x40000000U
 #define APB2_BASEADDR 0x40010000U
@@ -17,6 +38,12 @@
 
 // RCC base address
 #define RCC_BASEADDR ((AHB1_BASEADDR) + 0x3800)
+
+// EXTI base address
+#define EXTI_BASEADDR ((APB2_BASEADDR) + 0x3C00)
+
+// SYSCFG base address
+#define SYSCFG_BASEADDR ((APB2_BASEADDR) + 0x3800)
 
 // GPIO base addresses
 #define GPIOA_BASEADDR ((AHB1_BASEADDR) + 0x0000)
@@ -46,6 +73,37 @@
 #define UART4_BASEADDR  ((APB1_BASEADDR) + 0x4C00)
 #define UART5_BASEADDR  ((APB1_BASEADDR) + 0x5000)
 #define USART6_BASEADDR ((APB2_BASEADDR) + 0x1400)
+
+// EXTI interrupt numbers
+#define IRQ_NUM_EXTI0     6
+#define IRQ_NUM_EXTI1     7
+#define IRQ_NUM_EXTI2     8
+#define IRQ_NUM_EXTI3     9
+#define IRQ_NUM_EXTI4     10
+#define IRQ_NUM_EXTI9_5   23
+#define IRQ_NUM_EXTI15_10 40
+
+// SPI interrupt numbers
+#define IRQ_NUM_SPI1 35
+#define IRQ_NUM_SPI2 36
+#define IRQ_NUM_SPI3 51
+#define IRQ_NUM_SPI4 84
+
+// I2C interrupt numbers
+#define IRQ_NUM_I2C1_EV 31
+#define IRQ_NUM_I2C1_ER 32
+#define IRQ_NUM_I2C2_EV 33
+#define IRQ_NUM_I2C2_ER 34
+#define IRQ_NUM_I2C3_EV 72
+#define IRQ_NUM_I2C3_ER 73
+
+// UART/USART interrupt numbers
+#define IRQ_NUM_USART1 37
+#define IRQ_NUM_USART2 38
+#define IRQ_NUM_USART3 39
+#define IRQ_NUM_UART4  52
+#define IRQ_NUM_UART5  53
+#define IRQ_NUM_USART6 71
 
 // RCC registers
 typedef struct
@@ -82,7 +140,7 @@ typedef struct
     volatile uint32_t csr;
     volatile uint32_t _reserved9;
     volatile uint32_t _reserved10;
-    volatile uint32_t ss_cgr;
+    volatile uint32_t sscgr;
     volatile uint32_t pll_i2s_cfgr;
     volatile uint32_t pll_sai_cfgr;
     volatile uint32_t dck_cfgr;
@@ -105,12 +163,38 @@ typedef struct
     volatile uint32_t afrh;
 } gpio_regdef_t;
 
+// EXTI registers
+typedef struct
+{
+    volatile uint32_t imr;
+    volatile uint32_t emr;
+    volatile uint32_t rtsr;
+    volatile uint32_t ftsr;
+    volatile uint32_t swier;
+    volatile uint32_t pr;
+} exti_regdef_t;
+
+//  SYSCFG registers
+typedef struct
+{
+    volatile uint32_t memrmp;
+    volatile uint32_t pmc;
+    volatile uint32_t cr[4];
+    volatile uint32_t exticmpcr;
+    volatile uint32_t cfgr;
+} syscfg_regdef_t;
 
 
 // ==================== Peripheral definitions ====================
 
 // RCC
 #define RCC ((rcc_regdef_t *)RCC_BASEADDR)
+
+// EXTI
+#define EXTI ((exti_regdef_t *)EXTI_BASEADDR)
+
+// SYSCFG
+#define SYSCFG ((syscfg_regdef_t *)SYSCFG_BASEADDR)
 
 // GPIOx
 #define GPIOA ((gpio_regdef_t *)GPIOA_BASEADDR)
@@ -122,7 +206,15 @@ typedef struct
 #define GPIOG ((gpio_regdef_t *)GPIOG_BASEADDR)
 #define GPIOH ((gpio_regdef_t *)GPIOH_BASEADDR)
 
-
+// MISC
+#define GPIO_BASEADDR_TO_PORT(x) ((x == GPIOA) ? 0 : \
+                                  (x == GPIOB) ? 1 : \
+                                  (x == GPIOC) ? 2 : \
+                                  (x == GPIOD) ? 3 : \
+                                  (x == GPIOE) ? 4 : \
+                                  (x == GPIOF) ? 5 : \
+                                  (x == GPIOG) ? 6 : \
+                                  (x == GPIOH) ? 7 : 0)
 
 #include "rcc.h"
 #include "gpio.h"

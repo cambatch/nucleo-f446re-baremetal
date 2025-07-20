@@ -21,11 +21,32 @@ typedef struct
     gpio_config_t config;
 } gpio_handle_t;
 
+// GPIO pin numbers
+#define GPIO_PIN_NUM_0  0
+#define GPIO_PIN_NUM_1  1
+#define GPIO_PIN_NUM_2  2
+#define GPIO_PIN_NUM_3  3
+#define GPIO_PIN_NUM_4  4
+#define GPIO_PIN_NUM_5  5
+#define GPIO_PIN_NUM_6  6
+#define GPIO_PIN_NUM_7  7
+#define GPIO_PIN_NUM_8  8
+#define GPIO_PIN_NUM_9  9
+#define GPIO_PIN_NUM_10 10
+#define GPIO_PIN_NUM_11 11
+#define GPIO_PIN_NUM_12 12
+#define GPIO_PIN_NUM_13 13
+#define GPIO_PIN_NUM_14 14
+#define GPIO_PIN_NUM_15 15
+
 // GPIO modes
 #define GPIO_MODE_INPUT  0
 #define GPIO_MODE_OUTPUT 1
 #define GPIO_MODE_ALTFN  2
 #define GPIO_MODE_ANALOG 3
+#define GPIO_MODE_IT_RT  4 // Rising edge trigger
+#define GPIO_MODE_IT_FT  5 // Falling edge trigger
+#define GPIO_MODE_IT_RFT 6 // Rising and falling edge trigger
 
 // GPIO output type
 #define GPIO_OTYPE_PP 0 // Push-pull
@@ -116,5 +137,32 @@ void gpio_write_port(gpio_regdef_t *gpiox, uint16_t value);
  * @param mask  Bitmask indicating which pins to toggle (e.g., 0x00FF for pins 0–7).
  */
 void gpio_toggle_port(gpio_regdef_t *gpiox, uint16_t mask);
+
+/**
+ * @brief Enable or disable an NVIC line that services a GPIO/EXTI interrupt
+ * 
+ * @param irq_num The IRQ number (not EXTI line) e.g., EXTI0 = 6
+ * @param status true => enable interrupt, false => disable interrupt
+ */
+void gpio_irq_config(uint8_t irq_num, bool status);
+
+/**
+ * @brief Set the NVIC priority for a given IRQ number.
+ * 
+ * @param irq_num IRQ number. e.g., EXTI0 = 6
+ * @param priority Priority level (0 = highest, 15=lowest)
+ */
+void gpio_irq_priority_config(uint8_t irq_num, uint32_t priority);
+
+/**
+ * @brief Clears the pending interrupt bit for the triggered GPIO line.
+ * 
+ * This function should be called from the corresponding IRQ handler e.g., EXTIx_Handler
+ * to acknowledge and clear the interrupt for the EXTI line associated with the GPIO pin.
+ * 
+ * @param pin The GPIO pin number (0-15) on which the interrupt occurred.
+ * 
+ */
+void gpio_irq_handler(uint8_t pin);
 
 #endif
