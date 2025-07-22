@@ -8,6 +8,7 @@ void gpio_init(gpio_handle_t *handle)
     // Configure mode
     if(handle->config.mode <= GPIO_MODE_ALTFN)
     {
+        handle->gpiox->moder &= ~(0x3U << (2 * handle->config.pin_num));
         handle->gpiox->moder |= (handle->config.mode << (2 * handle->config.pin_num));
     }
     else
@@ -79,7 +80,7 @@ void gpio_init(gpio_handle_t *handle)
 
 void gpio_clock_control(gpio_regdef_t *gpiox, bool status)
 {
-    if(status == ENABLE)
+    if(status)
     {
         if(gpiox == GPIOA) GPIOA_PCLK_EN();
         else if(gpiox == GPIOB) GPIOB_PCLK_EN();
@@ -105,7 +106,8 @@ void gpio_clock_control(gpio_regdef_t *gpiox, bool status)
 
 uint8_t gpio_read_pin(gpio_regdef_t *gpiox, uint8_t pin)
 {
-    return (uint8_t)((gpiox->idr >> pin) & 0x1U);
+    uint8_t value = (uint8_t)(gpiox->idr >> pin) & (0x1U);
+    return value;
 }
 
 void gpio_write_pin(gpio_regdef_t *gpiox, uint8_t pin, uint8_t value)
@@ -139,7 +141,7 @@ void gpio_irq_config(uint8_t irq_num, bool status)
     uint8_t reg_index = irq_num / 32U;
     uint32_t mask = 1U << (irq_num % 32U);
 
-    if(status == ENABLE)
+    if(status)
     {
         NVIC_ISER_BASE[reg_index] = mask;
     }

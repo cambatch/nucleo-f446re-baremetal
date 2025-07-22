@@ -7,7 +7,7 @@ CFLAGS  ?= -W -Wall -Wextra -Werror -Wundef -Wshadow -Wdouble-promotion \
 
 LDFLAGS ?= -Tlink.ld -nostartfiles -nostdlib --specs nano.specs -lc -lgcc -Wl,--gc-sections -Wl,-Map=$(BUILD_DIR)/$@.map
 
-SOURCES = startup/startup.c src/main.c drivers/gpio.c
+SOURCES = startup/startup.c src/main.c drivers/gpio.c drivers/spi.c
 
 all: firmware.elf
 

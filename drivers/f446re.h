@@ -184,6 +184,20 @@ typedef struct
     volatile uint32_t cfgr;
 } syscfg_regdef_t;
 
+// SPI registers
+typedef struct
+{
+    volatile uint32_t cr1;
+    volatile uint32_t cr2;
+    volatile uint32_t sr;
+    volatile uint32_t dr;
+    volatile uint32_t crcpr;
+    volatile uint32_t rxcrcr;
+    volatile uint32_t txcrcr;
+    volatile uint32_t i2scfgr;
+    volatile uint32_t i2spr;
+} spi_regdef_t;
+
 
 // ==================== Peripheral definitions ====================
 
@@ -206,6 +220,46 @@ typedef struct
 #define GPIOG ((gpio_regdef_t *)GPIOG_BASEADDR)
 #define GPIOH ((gpio_regdef_t *)GPIOH_BASEADDR)
 
+// SPI
+#define SPI1 ((spi_regdef_t *)SPI1_BASEADDR)
+#define SPI2 ((spi_regdef_t *)SPI2_BASEADDR)
+#define SPI3 ((spi_regdef_t *)SPI3_BASEADDR)
+#define SPI4 ((spi_regdef_t *)SPI4_BASEADDR)
+
+// ==================== Register macros ====================
+#define SPI_CR1_CPHA        0
+#define SPI_CR1_CPOL        1
+#define SPI_CR1_MSTR        2
+#define SPI_CR1_BR          3
+#define SPI_CR1_SPE         6
+#define SPI_CR1_LSBFIRST    7
+#define SPI_CR1_SSI         8
+#define SPI_CR1_SSM         9
+#define SPI_CR1_RXONLY      10
+#define SPI_CR1_DFF         11
+#define SPI_CR1_CRCNEXT     12
+#define SPI_CR1_CRCEN       13
+#define SPI_CR1_BIDIOE      14
+#define SPI_CR1_BIDIMODE    15
+
+#define SPI_CR2_RXDNAEB     0
+#define SPI_CR2_TXDMAEN     1
+#define SPI_CR2_SSOE        2
+#define SPI_CR2_FRF         4
+#define SPI_CR2_ERRIE       5
+#define SPI_CR2_RXNEIE      6
+#define SPI_CR2_TXEIE       7
+
+#define SPI_SR_RXNE         0
+#define SPI_SR_TXE          1
+#define SPI_SR_CHSIDE       2
+#define SPI_SR_UDR          3
+#define SPI_SR_CRCERR       4
+#define SPI_SR_MODF         5
+#define SPI_SR_OVR          6
+#define SPI_SR_BSY          7
+#define SPI_SR_FRE          8
+
 // MISC
 #define GPIO_BASEADDR_TO_PORT(x) ((x == GPIOA) ? 0 : \
                                   (x == GPIOB) ? 1 : \
@@ -218,5 +272,6 @@ typedef struct
 
 #include "rcc.h"
 #include "gpio.h"
+#include "spi.h"
 
 #endif
