@@ -74,36 +74,36 @@
 #define UART5_BASEADDR  ((APB1_BASEADDR) + 0x5000)
 #define USART6_BASEADDR ((APB2_BASEADDR) + 0x1400)
 
-// EXTI interrupt numbers
-#define IRQ_NUM_EXTI0     6
-#define IRQ_NUM_EXTI1     7
-#define IRQ_NUM_EXTI2     8
-#define IRQ_NUM_EXTI3     9
-#define IRQ_NUM_EXTI4     10
-#define IRQ_NUM_EXTI9_5   23
-#define IRQ_NUM_EXTI15_10 40
+// Interrupt Numbers
+typedef enum irq_num_t
+{
+    IRQ_EXTI0       = 6,
+    IRQ_EXTI1       = 7,
+    IRQ_EXTI2       = 8,
+    IRQ_EXTI3       = 9,
+    IRQ_EXTI4       = 10,
+    IRQ_EXTI9_5     = 23,
+    IRQ_EXTI15_10   = 40,
 
-// SPI interrupt numbers
-#define IRQ_NUM_SPI1 35
-#define IRQ_NUM_SPI2 36
-#define IRQ_NUM_SPI3 51
-#define IRQ_NUM_SPI4 84
+    IRQ_SPI1        = 35,
+    IRQ_SPI2        = 36,
+    IRQ_SPI3        = 51,
+    IRQ_SPI4        = 84,
 
-// I2C interrupt numbers
-#define IRQ_NUM_I2C1_EV 31
-#define IRQ_NUM_I2C1_ER 32
-#define IRQ_NUM_I2C2_EV 33
-#define IRQ_NUM_I2C2_ER 34
-#define IRQ_NUM_I2C3_EV 72
-#define IRQ_NUM_I2C3_ER 73
+    IRQ_I2C1_EV     = 31,
+    IRQ_I2C1_ER     = 32,
+    IRQ_I2C2_EV     = 33,
+    IRQ_I2C2_ER     = 34,
+    IRQ_I2C3_EV     = 72,
+    IRQ_I2C3_ER     = 73,
 
-// UART/USART interrupt numbers
-#define IRQ_NUM_USART1 37
-#define IRQ_NUM_USART2 38
-#define IRQ_NUM_USART3 39
-#define IRQ_NUM_UART4  52
-#define IRQ_NUM_UART5  53
-#define IRQ_NUM_USART6 71
+    IRQ_USART1      = 37,
+    IRQ_USART2      = 38,
+    IRQ_USART3      = 39,
+    IRQ_UART4       = 52,
+    IRQ_UART5       = 53,
+    IRQ_USART6      = 71,
+} irq_num_t;
 
 // RCC registers
 typedef struct
@@ -226,7 +226,7 @@ typedef struct
 #define SPI3 ((spi_regdef_t *)SPI3_BASEADDR)
 #define SPI4 ((spi_regdef_t *)SPI4_BASEADDR)
 
-// ==================== Register macros ====================
+// ==================== Register bit position macros ====================
 #define SPI_CR1_CPHA        0
 #define SPI_CR1_CPOL        1
 #define SPI_CR1_MSTR        2
@@ -270,6 +270,7 @@ typedef struct
                                   (x == GPIOG) ? 6 : \
                                   (x == GPIOH) ? 7 : 0)
 
+#include "irq.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "spi.h"

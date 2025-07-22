@@ -9,13 +9,13 @@ void gpio_init(gpio_handle_t *handle)
     if(handle->config.mode <= GPIO_MODE_ALTFN)
     {
         handle->gpiox->moder &= ~(0x3U << (2 * handle->config.pin_num));
-        handle->gpiox->moder |= (handle->config.mode << (2 * handle->config.pin_num));
+        handle->gpiox->moder |= ((uint8_t)handle->config.mode << (2 * handle->config.pin_num));
     }
     else
     {
         // Interrupt information found in ARM DUI 0553A cortex-m and STM RM0390
         // Set pin as input
-        handle->gpiox->moder &= ~(1U << handle->config.pin_num);
+        handle->gpiox->moder &= ~(0x3U << (2 * handle->config.pin_num));
 
         // Enable SYSCFG clock
         SYSCFG_PCLK_EN();
@@ -59,23 +59,28 @@ void gpio_init(gpio_handle_t *handle)
         if(handle->config.pin_num < 8)
         {
             // Alternate function low register (pins 0-7)
+            handle->gpiox->afrl &= ~(0xFU << (4 * bit_pos));
             handle->gpiox->afrl |= (handle->config.altfn << (4 * bit_pos));
         }
         else
         {
             // Alternate function high register (pins 8-15)
+            handle->gpiox->afrh &= ~(0xFU << (4 * bit_pos));
             handle->gpiox->afrh |= (handle->config.altfn << (4 * bit_pos));
         }
     }
 
     // Configure output type
-    handle->gpiox->otyper |= (handle->config.otype << handle->config.pin_num);
+    handle->gpiox->otyper &= ~(0x1U << handle->config.pin_num);
+    handle->gpiox->otyper |= ((uint8_t)handle->config.otype << handle->config.pin_num);
 
     // Configure output speed
-    handle->gpiox->ospeedr |= (handle->config.speed << (2 * handle->config.pin_num));
+    handle->gpiox->ospeedr &= ~(0x3U << (2 * handle->config.pin_num));
+    handle->gpiox->ospeedr |= ((uint8_t)handle->config.speed << (2 * handle->config.pin_num));
 
     // Configure pull-up/pull-down
-    handle->gpiox->pupdr |= (handle->config.pupd << (2 * handle->config.pin_num));
+    handle->gpiox->pupdr &= ~(0x3U << (2 * handle->config.pin_num));
+    handle->gpiox->pupdr |= ((uint8_t)handle->config.pupd << (2 * handle->config.pin_num));
 }
 
 void gpio_clock_control(gpio_regdef_t *gpiox, bool status)
@@ -135,38 +140,11 @@ void gpio_toggle_port(gpio_regdef_t *gpiox, uint16_t mask)
     gpiox->odr ^= mask;
 }
 
-void gpio_irq_config(uint8_t irq_num, bool status)
-{
-    // ISER0 covers IRQ 0-31, ISER1 covers IRQ 32-63, etc...
-    uint8_t reg_index = irq_num / 32U;
-    uint32_t mask = 1U << (irq_num % 32U);
-
-    if(status)
-    {
-        NVIC_ISER_BASE[reg_index] = mask;
-    }
-    else
-    {
-        NVIC_ICER_BASE[reg_index] = mask;
-    }
-}
-
-void gpio_irq_priority_config(uint8_t irq_num, uint32_t priority)
-{
-    // Cortex-M4 supports up to 240 external IRQs
-    if(irq_num < 240U)
-    {
-        volatile uint8_t *nvic_ipr = (volatile uint8_t*)NVIC_IPRO_BASEADDR;
-        // Only 4 bits of interrupt priority are used (RM0390 10.1.1)
-        nvic_ipr[irq_num] = (priority & 0x0FU) << 4U;
-    }
-}
-
 void gpio_irq_handler(uint8_t pin)
 {
-    if(EXTI->pr & (1 << pin))
+    if(EXTI->pr & (1U << pin))
     {
         // Pending register is cleared by setting to 1
-        EXTI->pr |= (1 << pin);
+        EXTI->pr |= (1U << pin);
     }
 }

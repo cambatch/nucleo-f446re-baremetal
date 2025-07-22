@@ -15,8 +15,8 @@ void init_button(void)
     // PC13 user button, pressed => LOW
     gpio_handle_t button;
     button.gpiox = GPIOC;
-    button.config.pin_num = GPIO_PIN_NUM_13;
-    button.config.mode = GPIO_MODE_INPUT;
+    button.config.pin_num = GPIO_PIN_13;
+    button.config.mode = GPIO_MODE_IT_FT;
     button.config.otype = GPIO_OTYPE_PP;
     button.config.speed = GPIO_SPEED_LOW;
     button.config.pupd = GPIO_PUPD_PU;
@@ -39,32 +39,32 @@ void init_spi2(void)
     spi_gpio.config.speed = GPIO_SPEED_FAST;
 
     // NSS
-    spi_gpio.config.pin_num = GPIO_PIN_NUM_12;
+    spi_gpio.config.pin_num = GPIO_PIN_12;
     gpio_init(&spi_gpio);
 
     // SCK
-    spi_gpio.config.pin_num = GPIO_PIN_NUM_13;
+    spi_gpio.config.pin_num = GPIO_PIN_13;
     gpio_init(&spi_gpio);
 
     // MISO
-    spi_gpio.config.pin_num = GPIO_PIN_NUM_14;
+    spi_gpio.config.pin_num = GPIO_PIN_14;
     gpio_init(&spi_gpio);
 
     // MOSI
-    spi_gpio.config.pin_num = GPIO_PIN_NUM_15;
+    spi_gpio.config.pin_num = GPIO_PIN_15;
     gpio_init(&spi_gpio);
 
     // Configure SPI2
     spi_handle_t spi;
     spi.spix = SPI2;
-    spi.config.device_mode = SPI_DEVICE_MODE_MASTER;
-    spi.config.bus_config = SPI_BUS_MODE_FD;
-    spi.config.clk_speed = SPI_BAUD_DIV8;
+    spi.config.device_mode = SPI_MODE_MASTER;
+    spi.config.bus_config = SPI_BUS_FULL_DUPLEX;
+    spi.config.baud = SPI_BAUD_DIV8;
     spi.config.cpol = SPI_CPOL_LOW;
-    spi.config.cpha = SPI_CPHA_FIRST;
-    spi.config.ssm = SPI_SS_HARDWARE;
-    spi.config.data_format = SPI_FORMAT_8BITS;
-    spi.config.frame_format = SPI_FF_MSB_FIRST;
+    spi.config.cpha = SPI_CPHA_1EDGE;
+    spi.config.ssm = SPI_SSM_HARDWARE;
+    spi.config.df = SPI_DF_8BIT;
+    spi.config.ff = SPI_FF_MSB_FIRST;
 
     spi_init(&spi);
     spi_ssoe_control(SPI2, ENABLE);
@@ -72,27 +72,28 @@ void init_spi2(void)
 
 int main(void)
 {
-    char data[] = "Hello world!\n";
-
     init_button();
     init_spi2();
 
-    while(1)
-    {
-        while(gpio_read_pin(GPIOC, GPIO_PIN_NUM_13) != BTN_PRESSED);
-        spin(300000);
+    irq_enable(IRQ_EXTI15_10);
 
-        spi_peripheral_control(SPI2, ENABLE);
-
-        // String is < 255 bytes
-        uint8_t data_len = (uint8_t)strlen((const char*)data);
-
-        spi_data_send(SPI2, &data_len, 1);
-
-        spi_data_send(SPI2, (uint8_t *)data, data_len);
-
-        while(spi_flag_status(SPI2, SPI_FLAG_BUSY) == SPI_FLAG_SET);
-        spi_peripheral_control(SPI2, DISABLE);
-    }
+    while(1);
 }
 
+void send_message()
+{
+    char data[] = "Hello world!\n";
+    uint8_t data_len = (uint8_t)strlen(data);
+
+    spi_peripheral_control(SPI2, ENABLE);
+    spi_send(SPI2, &data_len, 1);
+    spi_send(SPI2, (uint8_t *)data, data_len);
+    while(spi_flag_status(SPI2, SPI_FLAG_BUSY));
+    spi_peripheral_control(SPI2, DISABLE);
+}
+
+void EXTI15_10_Handler(void)
+{
+    gpio_irq_handler(GPIO_PIN_13);
+    send_message();
+}

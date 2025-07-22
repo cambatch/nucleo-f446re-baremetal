@@ -10,26 +10,26 @@ void spi_init(spi_handle_t *handle)
 
     // Configure baud rate
     handle->spix->cr1 &= ~(7U << SPI_CR1_BR);
-    handle->spix->cr1 |= (handle->config.clk_speed << SPI_CR1_BR);
+    handle->spix->cr1 |= ((uint8_t)handle->config.baud << SPI_CR1_BR);
 
     // Configure cpol and cpha
     handle->spix->cr1 &= ~(1U << SPI_CR1_CPOL);
     handle->spix->cr1 &= ~(1U << SPI_CR1_CPHA);
-    handle->spix->cr1 |= (handle->config.cpol << SPI_CR1_CPOL);
-    handle->spix->cr1 |= (handle->config.cpha << SPI_CR1_CPHA);
+    handle->spix->cr1 |= ((uint8_t)handle->config.cpol << SPI_CR1_CPOL);
+    handle->spix->cr1 |= ((uint8_t)handle->config.cpha << SPI_CR1_CPHA);
 
     // Configure bus mode
-    if(handle->config.bus_config == SPI_BUS_MODE_FD)
+    if(handle->config.bus_config == SPI_BUS_FULL_DUPLEX)
     {
         // Full-duplex
         handle->spix->cr1 &= ~(1U << SPI_CR1_BIDIMODE);
     }
-    else if(handle->config.bus_config == SPI_BUS_MODE_HD)
+    else if(handle->config.bus_config == SPI_BUS_HALF_DUPLEX)
     {
         // Half-duplex
         handle->spix->cr1 |= (1U << SPI_CR1_BIDIMODE);
     }
-    else if(handle->config.bus_config == SPI_BUS_MODE_RXONLY)
+    else if(handle->config.bus_config == SPI_BUS_RX_ONLY)
     {
         // Simplex RX only
         handle->spix->cr1 &= ~(1U << SPI_CR1_BIDIMODE);
@@ -38,24 +38,24 @@ void spi_init(spi_handle_t *handle)
 
     // Configure LSBFIRST
     handle->spix->cr1 &= ~(1U << SPI_CR1_LSBFIRST);
-    handle->spix->cr1 |= (handle->config.frame_format << SPI_CR1_LSBFIRST);
+    handle->spix->cr1 |= ((uint8_t)handle->config.ff << SPI_CR1_LSBFIRST);
 
     // Configure SSM
     handle->spix->cr1 &= ~(1U << SPI_CR1_SSM);
     handle->spix->cr1 &= ~(1U << SPI_CR1_SSI);
-    if(handle->config.ssm == SPI_SS_SOFTWARE)
+    if(handle->config.ssm == SPI_SSM_SOFTWARE)
     {
-        handle->spix->cr1 |= (handle->config.ssm << SPI_CR1_SSM);
+        handle->spix->cr1 |= ((uint8_t)handle->config.ssm << SPI_CR1_SSM);
         handle->spix->cr1 |= (1U << SPI_CR1_SSI);
     }
 
     // Configure MSTR
     handle->spix->cr1 &= ~(1U << SPI_CR1_MSTR);
-    handle->spix->cr1 |= (handle->config.device_mode << SPI_CR1_MSTR);
+    handle->spix->cr1 |= ((uint8_t)handle->config.device_mode << SPI_CR1_MSTR);
 
     // Configure DFF
     handle->spix->cr1 &= ~(1U << SPI_CR1_DFF);
-    handle->spix->cr1 |= (handle->config.data_format << SPI_CR1_DFF);
+    handle->spix->cr1 |= ((uint8_t)handle->config.df << SPI_CR1_DFF);
 }
 
 void spi_clock_control(spi_regdef_t *spix, bool status)
@@ -110,7 +110,7 @@ uint8_t spi_flag_status(spi_regdef_t *spix, uint8_t flag)
     return SPI_FLAG_RESET;
 }
 
-void spi_data_send(spi_regdef_t *spix, uint8_t *tx_buffer, uint32_t bytes)
+void spi_send(spi_regdef_t *spix, const uint8_t *tx_buffer, uint32_t bytes)
 {
     while(spi_flag_status(spix, SPI_FLAG_BUSY) == SPI_FLAG_SET);
 
@@ -135,7 +135,7 @@ void spi_data_send(spi_regdef_t *spix, uint8_t *tx_buffer, uint32_t bytes)
     }
 }
 
-void spi_data_receive(spi_regdef_t *spix, uint8_t *rx_buffer, uint32_t bytes)
+void spi_receive(spi_regdef_t *spix, uint8_t *rx_buffer, uint32_t bytes)
 {
     while(spi_flag_status(spix, SPI_FLAG_BUSY) == SPI_FLAG_SET);
 
