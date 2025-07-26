@@ -1,5 +1,7 @@
 #include "spi.h"
 
+#include <stddef.h>
+
 void spi_init(spi_handle_t *handle)
 {
     // Ensure SPIx is disabled before modifying values
@@ -100,14 +102,9 @@ void spi_ssoe_control(spi_regdef_t *spix, bool status)
     }
 }
 
-uint8_t spi_flag_status(spi_regdef_t *spix, uint8_t flag)
+bool spi_flag_status(spi_regdef_t *spix, uint32_t flag)
 {
-    if(spix->sr & flag)
-    {
-        return SPI_FLAG_SET;
-    }
-
-    return SPI_FLAG_RESET;
+    return (spix->sr & flag) != 0;
 }
 
 void spi_send(spi_regdef_t *spix, const uint8_t *tx_buffer, uint32_t bytes)
@@ -157,5 +154,160 @@ void spi_receive(spi_regdef_t *spix, uint8_t *rx_buffer, uint32_t bytes)
             --bytes;
             ++rx_buffer;
         }
+    }
+}
+
+spi_state_t spi_transfer_it(spi_handle_t *handle, const uint8_t *tx_buffer, uint8_t *rx_buffer, const uint32_t bytes)
+{
+    spi_state_t state = handle->state;
+
+    if(state != SPI_STATE_BUSY)
+    {
+        handle->tx_buffer = tx_buffer;
+        handle->tx_bytes = bytes;
+        handle->rx_buffer = rx_buffer;
+        handle->rx_bytes = bytes;
+        handle->state = SPI_STATE_BUSY;
+
+        if(rx_buffer == NULL) handle->op = SPI_OP_TX;
+        else if(tx_buffer == NULL) handle->op = SPI_OP_RX;
+        else handle->op = SPI_OP_TXRX;
+
+        spi_peripheral_control(handle->spix, ENABLE);
+
+        if(handle->tx_bytes > 0) handle->spix->cr2 |= (1U << SPI_CR2_TXEIE);
+        if(handle->rx_buffer) handle->spix->cr2 |= (1U << SPI_CR2_RXNEIE);
+        handle->spix->cr2 |= (1U << SPI_CR2_ERRIE);
+
+        return SPI_STATE_READY;
+    }
+
+    return state;
+}
+
+void spi_irq_handler(spi_handle_t *handle)
+{
+    // TXE
+    if(spi_flag_status(handle->spix, SPI_FLAG_TXE) && handle->tx_bytes > 0)
+    {
+        if(handle->tx_buffer)
+        {
+            if(handle->config.df == SPI_DF_16BIT)
+            {
+                handle->spix->dr = *((uint16_t *)handle->tx_buffer);
+                handle->tx_buffer += 2;
+                handle->tx_bytes -= 2;
+            }
+            else
+            {
+                handle->spix->dr = *handle->tx_buffer;
+                ++handle->tx_buffer;
+                --handle->tx_bytes;
+            }
+        }
+        else // Dummy writes for non full-duplex communication
+        {
+            volatile uint16_t data = 0xFFFFU;
+            if(handle->config.df == SPI_DF_16BIT)
+            {
+               handle->spix->dr = data;
+                handle->tx_bytes -= 2;
+            }
+            else
+            {
+                handle->spix->dr = (uint8_t)data;
+                --handle->tx_bytes;
+            }
+        }
+
+        if(handle->tx_bytes == 0)
+        {
+            handle->spix->cr2 &= ~(1U << SPI_CR2_TXEIE);
+        }
+    }
+
+    // RXNE
+    if(spi_flag_status(handle->spix, SPI_FLAG_RXNE) && handle->rx_bytes > 0)
+    {
+        if(handle->rx_buffer)
+        {
+            if(handle->config.df == SPI_DF_16BIT)
+            {
+                *((uint16_t *)handle->rx_buffer) = (uint16_t)handle->spix->dr;
+                handle->rx_buffer += 2;
+                handle->rx_bytes -= 2;
+            }
+            else
+            {
+                *handle->rx_buffer = (uint8_t)handle->spix->dr;
+                ++handle->rx_buffer;
+                --handle->rx_bytes;
+            }
+        }
+        else // Dummy reads for non full-duplex communication
+        {
+            volatile uint16_t dummy;
+            if(handle->config.df == SPI_DF_16BIT)
+            {
+                dummy = (uint16_t)handle->spix->dr;
+                (void)dummy;
+                handle->rx_bytes -= 2;
+            }
+            else
+            {
+                dummy = (uint8_t)handle->spix->dr;
+                (void)dummy;
+                --handle->rx_bytes;
+            }
+        }
+
+        if(handle->rx_bytes == 0)
+        {
+            handle->spix->cr2 &= ~(1U << SPI_CR2_RXNEIE);
+        }
+    }
+
+    if(handle->tx_bytes == 0  && handle->rx_bytes == 0 && handle->state == SPI_STATE_BUSY)
+    {
+        // Disable interrupts
+        handle->spix->cr2 &= ~(1U << SPI_CR2_ERRIE);
+
+        if(handle->event_callback)
+        {
+            switch(handle->op)
+            {
+                case SPI_OP_TX: handle->event_callback(handle, SPI_EVENT_TX_DONE); break;
+                case SPI_OP_RX: handle->event_callback(handle, SPI_EVENT_RX_DONE); break;
+                case SPI_OP_TXRX: handle->event_callback(handle, SPI_EVENT_TXRX_DONE); break;
+                default: break;
+            }
+        }
+
+        handle->op = SPI_OP_NONE;
+        handle->state = SPI_STATE_READY;
+    }
+
+    // Check for overrun error
+    if(spi_flag_status(handle->spix, SPI_FLAG_OVR))
+    {
+        // Clear flag
+        volatile uint32_t dummy = handle->spix->dr;
+        dummy = handle->spix->sr;
+        (void)dummy;
+
+        if(handle->event_callback)
+            handle->event_callback(handle, SPI_EVENT_OVR_ERR);
+    }
+
+    // Check for modf error
+    if(spi_flag_status(handle->spix, SPI_FLAG_MODF))
+    {
+        // Clear flag
+        volatile uint32_t dummy = handle->spix->sr;
+        handle->spix->cr1 |= 0;
+        (void)dummy;
+
+        if(handle->event_callback)
+            handle->event_callback(handle, SPI_EVENT_MODF_ERR);
     }
 }
