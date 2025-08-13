@@ -3,6 +3,9 @@
 
 #include "f446re.h"
 
+#define HSI_CLOCK_HZ 16000000U
+#define HSE_CLOCK_HZ 8000000U
+
 // SYSCFG peripheral clock enable
 #define SYSCFG_PCLK_EN() (RCC->apb2enr |= (1 << 14))
 
@@ -56,5 +59,43 @@
 #define SPI2_RESET() do { RCC->apb1rstr |= (1U << 14); RCC->apb1rstr &= ~(1U << 14); } while(0)
 #define SPI3_RESET() do { RCC->apb1rstr |= (1U << 15); RCC->apb1rstr &= ~(1U << 15); } while(0)
 #define SPI4_RESET() do { RCC->apb2rstr |= (1U << 13); RCC->apb2rstr &= ~(1U << 13); } while(0)
+
+// I2C peripheral clock enable
+#define I2C1_PCLK_EN() (RCC->apb1enr |= (1U << 21))
+#define I2C2_PCLK_EN() (RCC->apb1enr |= (1U << 22))
+#define I2C3_PCLK_EN() (RCC->apb1enr |= (1U << 23))
+
+// I2C peripheral clock disable
+#define I2C1_PCLK_DI() (RCC->apb1enr &= ~(1U << 21))
+#define I2C2_PCLK_DI() (RCC->apb1enr &= ~(1U << 22))
+#define I2C3_PCLK_DI() (RCC->apb1enr &= ~(1U << 23))
+
+// I2C peripheral reset
+#define I2C1_RESET() do { RCC->apb1rstr |= (1U << 21); RCC->apb1rstr &= ~(1U << 21); } while(0)
+#define I2C2_RESET() do { RCC->apb1rstr |= (1U << 22); RCC->apb1rstr &= ~(1U << 22); } while(0)
+#define I2C3_RESET() do { RCC->apb1rstr |= (1U << 23); RCC->apb1rstr &= ~(1U << 23); } while(0)
+
+// Clock types
+typedef enum rcc_clock_t
+{
+    RCC_CLOCK_HSI = 0,  // High speed internal oscillator
+    RCC_CLOCK_HSE,      // High speed external oscillator
+    RCC_CLOCK_PLL_P,    // PLL output (main system clock)
+    RCC_CLOCK_PLL_R     // PLL R output (e.g., I2S/SAI peripherals)
+} rcc_clock_t;
+
+rcc_clock_t rcc_system_clock();
+
+uint32_t rcc_system_clock_hz();
+
+uint16_t rcc_ahb_prescalar();
+
+uint8_t rcc_apb1_prescalar();
+
+uint8_t rcc_apb2_prescalar();
+
+uint32_t rcc_apb1_clock_hz();
+
+uint32_t rcc_apb2_clock_hz();
 
 #endif

@@ -198,6 +198,20 @@ typedef struct
     volatile uint32_t i2spr;
 } spi_regdef_t;
 
+// I2C registers
+typedef struct
+{
+    volatile uint32_t cr1;
+    volatile uint32_t cr2;
+    volatile uint32_t oar1;
+    volatile uint32_t oar2;
+    volatile uint32_t dr;
+    volatile uint32_t sr1;
+    volatile uint32_t sr2;
+    volatile uint32_t ccr;
+    volatile uint32_t trise;
+    volatile uint32_t fltr;
+} i2c_regdef_t;
 
 // ==================== Peripheral definitions ====================
 
@@ -226,7 +240,31 @@ typedef struct
 #define SPI3 ((spi_regdef_t *)SPI3_BASEADDR)
 #define SPI4 ((spi_regdef_t *)SPI4_BASEADDR)
 
-// ==================== Register bit position macros ====================
+// I2C
+#define I2C1 ((i2c_regdef_t *)I2C1_BASEADDR)
+#define I2C2 ((i2c_regdef_t *)I2C2_BASEADDR)
+#define I2C3 ((i2c_regdef_t *)I2C3_BASEADDR)
+
+// ==================== RCC register bit position macros ====================
+#define RCC_CFGR_SW         0
+#define RCC_CFGR_SWS        2
+#define RCC_CFGR_HPRE       4
+#define RCC_CFGR_PPRE1      10
+#define RCC_CFGR_PPRE2      13
+#define RCC_CFGR_RTCPRE     16
+#define RCC_CFGR_MCO1       21
+#define RCC_CFGR_MCO1PRE    24
+#define RCC_CFGR_MCO2PRE    27
+#define RCC_CFGR_MCO2       30
+
+#define RCC_PLLCFGR_PLLM    0
+#define RCC_PLLCFGR_PLLN    6
+#define RCC_PLLCFGR_PLLP    16
+#define RCC_PLLCFGR_PLLSRC  22
+#define RCC_PLLCFGR_PLLQ    24
+#define RCC_PLLCFGR_PLLR    28
+
+// ==================== SPI register bit position macros ====================
 #define SPI_CR1_CPHA        0
 #define SPI_CR1_CPOL        1
 #define SPI_CR1_MSTR        2
@@ -260,6 +298,70 @@ typedef struct
 #define SPI_SR_BSY          7
 #define SPI_SR_FRE          8
 
+// ==================== I2C register bit position macros ====================
+#define I2C_CR1_PE          0
+#define I2C_CR1_SMBUS       1
+#define I2C_CR1_SMB_TYPE    3
+#define I2C_CR1_ENARP       4
+#define I2C_CR1_ENPEC       5
+#define I2C_CR1_ENGC        6
+#define I2C_CR1_NOSTRETCH   7
+#define I2C_CR1_START       8
+#define I2C_CR1_STOP        9
+#define I2C_CR1_ACK         10
+#define I2C_CR1_POS         11
+#define I2C_CR1_PEC         12
+#define I2C_CR1_ALERT       13
+#define I2C_CR1_SWRST       15
+
+#define I2C_CR2_FREQ        0
+#define I2C_CR2_ITTERREN    8
+#define I2C_CR2_ITTEVTEN    9
+#define I2C_CR2_ITBUFEN     10
+#define I2C_CR2_DMAEN       11
+#define I2C_CR2_LAST        12
+
+#define I2C_OAR1_ADD0       0
+#define I2C_OAR1_ADD1       1
+#define I2C_OAR1_ADD8       8
+#define I2C_OAR1_ADDMODE    15
+
+#define I2C_OAR2_ENDUAL     0
+#define I2C_OAR2_ADD2       1
+
+#define I2C_SR1_SB           0
+#define I2C_SR1_ADDR         1
+#define I2C_SR1_BTF          2
+#define I2C_SR1_ADD10        3
+#define I2C_SR1_STOPF        4
+#define I2C_SR1_RXNE         6
+#define I2C_SR1_TXE          7
+#define I2C_SR1_BERR         8
+#define I2C_SR1_ARLO         9
+#define I2C_SR1_AF           10
+#define I2C_SR1_OVR          11
+#define I2C_SR1_PECERR       12
+#define I2C_SR1_TIMEOUT      14
+#define I2C_SR1_SMBALERT     15
+
+#define I2C_SR2_MSL          0
+#define I2C_SR2_BUSY         1
+#define I2C_SR2_TRA          2
+#define I2C_SR2_GENCALL      4
+#define I2C_SR2_SMBDEFAULT   5
+#define I2C_SR2_SMBHOST      6
+#define I2C_SR2_DUALF        7
+#define I2C_SR2_PEC          8
+
+#define I2C_CCR_CCR          0
+#define I2C_CCR_DUTY         14
+#define I2C_CCR_FS           15
+
+#define I2C_TRISE_TRISE      0
+
+#define I2C_FLTR_DNF         0
+#define I2C_FLTR_ANOFF       4
+
 // MISC
 #define GPIO_BASEADDR_TO_PORT(x) ((x == GPIOA) ? 0 : \
                                   (x == GPIOB) ? 1 : \
@@ -274,5 +376,6 @@ typedef struct
 #include "rcc.h"
 #include "gpio.h"
 #include "spi.h"
+#include "i2c.h"
 
 #endif
