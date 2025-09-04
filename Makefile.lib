@@ -2,11 +2,11 @@ AR := arm-none-eabi-ar
 CC := arm-none-eabi-gcc
 CFLAGS := -mcpu=cortex-m4 -mthumb -ffunction-sections -fdata-sections -O2 \
 		  -Wall -Wextra -Werror -std=c11
-CFLAGS += -Idrivers
+CFLAGS += -Iinclude
 
-SRCS := $(wildcard drivers/*.c)
+SRCS := $(wildcard src/*.c)
 OBJS := $(SRCS:.c=.o)
-LIB  := libf446bm.a
+LIB  := libf446re.a
 
 all: $(LIB)
 

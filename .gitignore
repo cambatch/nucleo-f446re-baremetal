@@ -20,6 +20,9 @@ out/
 .idea/
 *.code-workspace
 
-# Source files
-src/
+# svd files
+*.svd
 
+# lib files
+*.a
+*.so
