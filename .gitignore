@@ -20,4 +20,6 @@ out/
 .idea/
 *.code-workspace
 
+# Source files
+src/
 
