@@ -27,6 +27,81 @@
 // NVIC interrupt priority register base address
 #define NVIC_IPRO_BASEADDR ((volatile uint32_t *)0xE000E400U)
 
+// Debug specific
+#define DFSR_BASEADDR  ((volatile uint32_t *)0xE000ED30U) // Debug fault status register
+#define DHCSR_BASEADDR ((volatile uint32_t *)0xE000EDF0U) // Debug halting control and status register
+#define DCRSR_BASEADDR ((volatile uint32_t *)0xE000EDF4U) // Debug core register selector register
+#define DCRDR_BASEADDR ((volatile uint32_t *)0xE000EDF8U) // Debug core register data register
+#define DEMCR_BASEADDR ((volatile uint32_t *)0xE000EDFCU) // Debug exception and monitor control register
+
+#define DWT_BASEADDR ((volatile uint32_t *)0xE0001000U)
+
+typedef struct
+{
+    volatile uint32_t ctrl;
+    volatile uint32_t cyccnt;
+    volatile uint32_t cpicnt;
+    volatile uint32_t exccnt;
+    volatile uint32_t sleepcnt;
+    volatile uint32_t lsucnt;
+    volatile uint32_t foldcnt;
+    volatile uint32_t pcsr;
+
+    volatile uint32_t comp0;
+    volatile uint32_t mask0;
+    volatile uint32_t function0;
+    volatile uint32_t _reserved0;
+
+    volatile uint32_t comp1;
+    volatile uint32_t mask1;
+    volatile uint32_t function1;
+    volatile uint32_t _reserved1;
+
+    volatile uint32_t comp2;
+    volatile uint32_t mask2;
+    volatile uint32_t function2;
+    volatile uint32_t _reserved2;
+
+    volatile uint32_t comp3;
+    volatile uint32_t mask3;
+    volatile uint32_t function3;
+
+    volatile uint32_t _reserved3[990]; // gap from 0xE0001058-0xE0001FD0
+
+    volatile uint32_t pid4;
+    volatile uint32_t pid5;
+    volatile uint32_t pid6;
+    volatile uint32_t pid7;
+    volatile uint32_t pid0;
+    volatile uint32_t pid1;
+    volatile uint32_t pid2;
+    volatile uint32_t pid3;
+    volatile uint32_t cid0;
+    volatile uint32_t cid1;
+    volatile uint32_t cid2;
+    volatile uint32_t cid3;
+} dwt_regdef_t;
+
+#define DWT ((dwt_regdef_t *)DWT_BASEADDR)
+
+// DEMCR bit positions
+#define DEMCR_TRCENA 24U
+#define DEMCR_MON_REQ 19U
+#define DEMCR_MON_SETP 18U
+#define DEMCR_MON_PEND 17U
+#define DEMCR_EN 16U
+#define DEMCR_VC_HARDERR 10U
+#define DEMCR_VC_INTERR 9U
+#define DEMCR_VC_BUSERR 8U
+#define DEMCR_VC_STATERR 7U
+#define DEMCR_VC_CHKERR 6U
+#define DEMCR_VC_NOCPERR 5U
+#define DEMCR_VC_MMERR 4U
+#define DEMCR_VC_CORERESET 0U
+
+// DWT bit positions
+#define DWT_CTRL_CYCCNTENA 0
+
 
 // ==================== F446xx Specific ====================
 // Bus base addresses
@@ -377,5 +452,6 @@ typedef struct
 #include "gpio.h"
 #include "spi.h"
 #include "i2c.h"
+#include "dwt.h"
 
 #endif
