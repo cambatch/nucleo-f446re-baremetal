@@ -5,6 +5,7 @@
 *.hex
 *.map
 *.lst
+*.d
 
 # Temp files
 *~
