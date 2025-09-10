@@ -39,52 +39,40 @@ void usart_init(usart_handle_t *handle)
 {
     usart_clock_control(handle->usartx, ENABLE);
 
-    if(handle->config.mode == USART_MODE_TX_ONLY)
-    {
-        handle->usartx->cr1 &= ~(1U << USART_CR1_RE);
-        handle->usartx->cr1 |= (1U << USART_CR1_TE);
-    }
-    else if(handle->config.mode == USART_MODE_RX_ONLY)
-    {
-        handle->usartx->cr1 &= ~(1U << USART_CR1_TE);
-        handle->usartx->cr1 |= (1U << USART_CR1_RE);
-    }
-    else
-    {
-        handle->usartx->cr1 |= (1U << USART_CR1_TE);
-        handle->usartx->cr1 |= (1U << USART_CR1_RE);
-    }
+    handle->usartx->cr1 &= ~(1U << USART_CR1_UE);
 
-    handle->usartx->cr1 &= ~(1U << USART_CR1_M);
-    handle->usartx->cr1 |= (1U << USART_CR1_M);
+    // ==================== CR1 ====================
+    // Clear bits
+    handle->usartx->cr1 &= ~((1U << USART_CR1_M) | (1U << USART_CR1_PCE) | (1U << USART_CR1_PS)
+                           | (1U << USART_CR1_TE) | (1U << USART_CR1_RE));
 
+    // Word length
+    if(handle->config.word_len == USART_WORDLEN_9) handle->usartx->cr1 |= (1U << USART_CR1_M);
+
+    // Mode
+    if(handle->config.mode != USART_MODE_RX_ONLY) handle->usartx->cr1 |= (1U << USART_CR1_TE);
+    if(handle->config.mode != USART_MODE_TX_ONLY) handle->usartx->cr1 |= (1U << USART_CR1_RE);
+
+    // Parity
     if(handle->config.parity == USART_PARITY_EN_EVEN)
-    {
-        // even parity is on by default when parity is enabled
         handle->usartx->cr1 |= (1U << USART_CR1_PCE);
-    }
     else if(handle->config.parity == USART_PARITY_EN_ODD)
-    {
-        handle->usartx->cr1 |= (1U << USART_CR1_PCE);
-        handle->usartx->cr1 |= (1U << USART_CR1_PS);
-    }
+        handle->usartx->cr1 |= ((1U << USART_CR1_PCE) | (1U << USART_CR1_PS));
 
-    // configure cr2
-    handle->usartx->cr2 |= handle->config.stop_bits << USART_CR2_STOP;
+    // ==================== CR2 ====================
+    // Clear bits
+    handle->usartx->cr2 &= ~(3U << USART_CR2_STOP);
+    handle->usartx->cr2 |= ((uint32_t)handle->config.stop_bits << USART_CR2_STOP);
 
-    // configure cr3
-    if(handle->config.hw_control == USART_HWFLOW_CTS)
+    // ==================== CR3 ====================
+    // Clear bits
+    handle->usartx->cr3 &= ~((1U << USART_CR3_CTSE) | (1U << USART_CR3_RTSE));
+
+    // HW flow control
+    if(handle->config.hw_control != USART_HWFLOW_NONE)
     {
-        handle->usartx->cr3 |= (1U << USART_CR3_CTSE);
-    }
-    else if(handle->config.hw_control == USART_HWFLOW_RTS)
-    {
-        handle->usartx->cr3 |= (1U << USART_CR3_RTSE);
-    }
-    else
-    {
-        handle->usartx->cr3 |= (1U << USART_CR3_CTSE);
-        handle->usartx->cr3 |= (1U << USART_CR3_RTSE);
+        if(handle->config.hw_control != USART_HWFLOW_RTS) handle->usartx->cr3 |= (1U << USART_CR3_CTSE);
+        if(handle->config.hw_control != USART_HWFLOW_CTS) handle->usartx->cr3 |= (1U << USART_CR3_RTSE);
     }
 
     usart_set_baudrate(handle->usartx, handle->config.baud);
@@ -92,27 +80,17 @@ void usart_init(usart_handle_t *handle)
 
 void usart_set_baudrate(usart_regdef_t *usartx, uint32_t baud_rate)
 {
-    uint32_t clk;
-    uint32_t usart_div;
-    uint32_t mpart;
-    uint32_t fpart;
+    uint32_t pclk = (usartx == USART1 || usartx == USART6) ? rcc_apb2_clock_hz() : rcc_apb1_clock_hz();
+    uint32_t over8 = (usartx->cr1 & (1U << USART_CR1_OVER8)) ? 1U : 0U;
+    uint32_t usart_div = over8 ? ((25U * pclk) / (2U * baud_rate)) : ((25U * pclk) / (4U * baud_rate));
+    uint32_t mantissa = usart_div / 100;
+    uint32_t fraction = (usart_div - (mantissa * 100));
 
-    if(usartx == USART1 || usartx == USART6) clk = rcc_apb2_clock_hz();
-    else                                     clk = rcc_apb1_clock_hz();
+    if(over8) fraction = (((fraction * 8) + 50) / 100) & ((uint8_t)0x07);
+    else      fraction = (((fraction * 16) + 50) / 100) & ((uint8_t)0x0F);
 
-    if(usartx->cr1 & (1U << USART_CR1_OVER8)) usart_div = ((25 * clk) / (2 * baud_rate));
-    else                                      usart_div = ((25 * clk) / (4 * baud_rate));
-
-    mpart = usart_div / 100;
-
-    usartx->brr |= mpart << USART_BRR_DIV_MANTISSA;
-
-    fpart = (usart_div - (mpart * 100));
-
-    if(usartx->cr1 & (1U << USART_CR1_OVER8)) fpart = (((fpart * 8) + 50) / 100) & ((uint8_t)0x07);
-    else                                      fpart = (((fpart * 16) + 50) / 100) & ((uint8_t)0x07);
-
-    usartx->brr |= fpart << USART_BRR_DIV_FRACTION;
+    usartx->brr = ((mantissa << USART_BRR_DIV_MANTISSA) | (fraction << USART_BRR_DIV_FRACTION));
+    (void)0;
 }
 
 void usart_send(usart_handle_t *handle, uint8_t *buffer, uint32_t len)
