@@ -288,6 +288,18 @@ typedef struct
     volatile uint32_t fltr;
 } i2c_regdef_t;
 
+// USART registers
+typedef struct
+{
+    volatile uint32_t sr;
+    volatile uint32_t dr;
+    volatile uint32_t brr;
+    volatile uint32_t cr1;
+    volatile uint32_t cr2;
+    volatile uint32_t cr3;
+    volatile uint32_t gtpr;
+} usart_regdef_t;
+
 // ==================== Peripheral definitions ====================
 
 // RCC
@@ -319,6 +331,14 @@ typedef struct
 #define I2C1 ((i2c_regdef_t *)I2C1_BASEADDR)
 #define I2C2 ((i2c_regdef_t *)I2C2_BASEADDR)
 #define I2C3 ((i2c_regdef_t *)I2C3_BASEADDR)
+
+// USART/UART
+#define USART1 ((usart_regdef_t *)USART1_BASEADDR)
+#define USART2 ((usart_regdef_t *)USART2_BASEADDR)
+#define USART3 ((usart_regdef_t *)USART3_BASEADDR)
+#define UART4  ((usart_regdef_t *)UART4_BASEADDR)
+#define UART5  ((usart_regdef_t *)UART5_BASEADDR)
+#define USART6 ((usart_regdef_t *)USART6_BASEADDR)
 
 // ==================== RCC register bit position macros ====================
 #define RCC_CFGR_SW         0
@@ -437,6 +457,63 @@ typedef struct
 #define I2C_FLTR_DNF         0
 #define I2C_FLTR_ANOFF       4
 
+// ==================== USART register bit position macros ====================
+#define USART_SR_PE 0
+#define USART_SR_FE 1
+#define USART_SR_NF 2
+#define USART_SR_ORE 3
+#define USART_SR_IDLE 4
+#define USART_SR_RXNE 5
+#define USART_SR_TC  6
+#define USART_SR_TXE 7
+#define USART_SR_LBD 8
+#define USART_SR_CRS 9
+
+#define USART_BRR_DIV_FRACTION 0
+#define USART_BRR_DIV_MANTISSA 4
+
+#define USART_CR1_SBK 0
+#define USART_CR1_RWU 1
+#define USART_CR1_RE 2
+#define USART_CR1_TE 3
+#define USART_CR1_IDLEIE 4
+#define USART_CR1_RXNEIE 5
+#define USART_CR1_TCIE 6
+#define USART_CR1_TXEIE 7
+#define USART_CR1_PEIE 8
+#define USART_CR1_PS 9
+#define USART_CR1_PCE 10
+#define USART_CR1_WAKE 11
+#define USART_CR1_M 12
+#define USART_CR1_UE 13
+#define USART_CR1_OVER8 15
+
+#define USART_CR2_ADD 0
+#define USART_CR2_LBDL 5
+#define USART_CR2_LBDIE 6
+#define USART_CR2_LBCL 8
+#define USART_CR2_CPHA 9
+#define USART_CR2_CPOL 10
+#define USART_CR2_CLKEN 11
+#define USART_CR2_STOP  12
+#define USART_CR2_LINEN 14
+
+#define USART_CR3_EIE 0
+#define USART_CR3_IREN 1
+#define USART_CR3_IRLP 2
+#define USART_CR3_HDSEL 3
+#define USART_CR3_NACK 4
+#define USART_CR3_SCEN 5
+#define USART_CR3_DMAR 6
+#define USART_CR3_DMAT 7
+#define USART_CR3_RTSE 8
+#define USART_CR3_CTSE 9
+#define USART_CR3_ONEBIT 11
+
+#define USART_GTPR_PSC 0
+#define USART_GTPR_GT 8
+
+
 // MISC
 #define GPIO_BASEADDR_TO_PORT(x) ((x == GPIOA) ? 0 : \
                                   (x == GPIOB) ? 1 : \
@@ -452,6 +529,7 @@ typedef struct
 #include "gpio.h"
 #include "spi.h"
 #include "i2c.h"
+#include "usart.h"
 #include "dwt.h"
 
 #endif

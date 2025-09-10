@@ -75,6 +75,31 @@
 #define I2C2_RESET() do { RCC->apb1rstr |= (1U << 22); RCC->apb1rstr &= ~(1U << 22); } while(0)
 #define I2C3_RESET() do { RCC->apb1rstr |= (1U << 23); RCC->apb1rstr &= ~(1U << 23); } while(0)
 
+// USART/UART clock enable
+#define USART1_PCLK_EN() (RCC->apb2enr |= (1U << 4))
+#define USART2_PCLK_EN() (RCC->apb1enr |= (1U << 17))
+#define USART3_PCLK_EN() (RCC->apb1enr |= (1U << 18))
+#define UART4_PCLK_EN()  (RCC->apb1enr |= (1U << 19))
+#define UART5_PCLK_EN()  (RCC->apb1enr |= (1U << 20))
+#define USART6_PCLK_EN() (RCC->apb2enr |= (1U << 5))
+
+// USART/UART peripheral clock disable
+#define USART1_PCLK_DI() (RCC->apb2enr &= ~(1U << 4))
+#define USART2_PCLK_DI() (RCC->apb1enr &= ~(1U << 17))
+#define USART3_PCLK_DI() (RCC->apb1enr &= ~(1U << 18))
+#define UART4_PCLK_DI()  (RCC->apb1enr &= ~(1U << 19))
+#define UART5_PCLK_DI()  (RCC->apb1enr &= ~(1U << 20))
+#define USART6_PCLK_DI() (RCC->apb2enr &= ~(1U << 5))
+
+// USART/UART peripheral reset
+#define USART1_RESET() do { RCC->apb2rstr |= (1U << 4); RCC->apb2rstr &= ~(1U << 4); } while(0)
+#define USART2_RESET() do { RCC->apb1rstr |= (1U << 17); RCC->apb1rstr &= ~(1U << 17); } while(0)
+#define USART3_RESET() do { RCC->apb1rstr |= (1U << 18); RCC->apb1rstr &= ~(1U << 18); } while(0)
+#define UART4_RESET()  do { RCC->apb1rstr |= (1U << 19); RCC->apb1rstr &= ~(1U << 19); } while(0)
+#define UART5_RESET()  do { RCC->apb1rstr |= (1U << 20); RCC->apb1rstr &= ~(1U << 20); } while(0)
+#define USART6_RESET() do { RCC->apb2rstr |= (1U << 5); RCC->apb2rstr &= ~(1U << 5); } while(0)
+
+
 // Clock types
 typedef enum rcc_clock_t
 {
